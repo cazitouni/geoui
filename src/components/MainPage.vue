@@ -1,19 +1,22 @@
 <template>
-  <v-container>
-    <v-card
-  elevation="12"
-  outlined
-  tile
->
-    <h1>Bitcoin Price Index</h1>
+
+<v-container >
+<v-switch v-model="$vuetify.theme.dark" hint="This toggles the global state of the Vuetify theme" inset label="Vuetify Theme Dark" persistent-hint></v-switch>
+
+  <v-toolbar color="green" dense elevation="4" rounded class="my-4"></v-toolbar>
+
+  <v-card  class="mx-auto" >
+    <v-card-title>Bitcoin Price Index</v-card-title>
+    <v-card-text>
     <div v-for="currency in info" class="currency" :key="currency.id">
     {{ currency.description }}:
-    <span class="lighten">
     <span v-html="currency.symbol"></span>{{ currency.rate_float | currencydecimal }}
-    </span>
     </div>
-    </v-card>
-  </v-container>
+    </v-card-text>
+  </v-card>
+
+</v-container>
+
 </template>
 
 <script>
