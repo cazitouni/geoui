@@ -5,14 +5,8 @@
 
   <v-toolbar color="green" dense elevation="4" rounded class="my-4"></v-toolbar>
 
-  <v-card  class="mx-auto" >
-    <v-card-title>Bitcoin Price Index</v-card-title>
-    <v-card-text>
-    <div v-for="currency in info" class="currency" :key="currency.id">
-    {{ currency.description }}:
-    <span v-html="currency.symbol"></span>{{ currency.rate_float | currencydecimal }}
-    </div>
-    </v-card-text>
+  <v-card  v-for="element in liste" :key="element.id" class="mx-auto" >
+    {{element}}
   </v-card>
 
 </v-container>
@@ -21,11 +15,13 @@
 
 <script>
 import axios from 'axios'
+var convert = require('xml-js');
 export default{
   
   data () {
     return {
-      info: null
+      info: null,
+      liste: []
     }
   },
   filters: {
@@ -35,8 +31,10 @@ export default{
 },
   mounted () {
 axios
-  .get('https://api.coindesk.com/v1/bpi/currentprice.json')
-  .then(response => (this.info = response.data.bpi))
+  .get('https://wisiglw.cus.fr/geonetwork/srv/api/sitemap')
+  .then(response => (this.info = convert.xml2js(response.data)))
+  .then(() => this.info= this.info.elements[0].elements)
+  .then(() =>this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text);}))
   }
 }
 </script>
