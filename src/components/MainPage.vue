@@ -5,8 +5,8 @@
 
   <v-toolbar color="green" dense elevation="4" rounded class="my-4"></v-toolbar>
 
-  <v-card  v-for="element in liste" :key="element.id" class="mx-auto" >
-    {{element}}
+  <v-card  v-for="element in projets" :key="element.id" class="ma-4" >
+{{element}}
   </v-card>
 
 </v-container>
@@ -21,20 +21,23 @@ export default{
   data () {
     return {
       info: null,
-      liste: []
+      liste: [],
+      projets: []
     }
   },
-  filters: {
-  currencydecimal (value) {
-    return value.toFixed(2)
-  }
-},
+
   mounted () {
-axios
+  const requestOne = axios
   .get('https://wisiglw.cus.fr/geonetwork/srv/api/sitemap')
   .then(response => (this.info = convert.xml2js(response.data)))
   .then(() => this.info= this.info.elements[0].elements)
-  .then(() =>this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text);}))
+  .then(() => this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text);}))
+  .then(() => 
+  this.liste.forEach((element, i) => 
+  axios.get(this.liste[i])
+  .then(response => (this.projets.push(response.data)))
+  .then()
+  ))
   }
 }
 </script>
