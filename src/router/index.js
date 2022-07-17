@@ -12,7 +12,7 @@ const routes = [
     component: MainPage
   },
   {
-    path: ':id',
+    path: '/:id',
     name: 'fiche',
     component: FicheMeta
   }
