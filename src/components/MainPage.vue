@@ -3,18 +3,17 @@
 <v-sheet align="center">
 <AppBar/>
 
-<v-container>
+<v-container >
 <v-row justify="center">
-<v-card   v-for="element in orderProjets" :key="element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text']" class="  ma-4" max-width="344" >
-  <v-col >
-<div v-if="element['gmd:identificationInfo']['gmd:MD_DataIdentification'] !== undefined">
+
+<v-card outlined elevation="2"  v-for="element in projets" :key="element['gmd:fileIdentifier']['gco:CharacterString']['#text']" class="  ma-4" max-width="344" >
+  <v-col v-if="element['gmd:identificationInfo']['gmd:MD_DataIdentification'] !== undefined">
   <v-row v-if="element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:graphicOverview'] !== undefined">
-    <v-img :aspect-ratio="16/9"    :src ="element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:graphicOverview']['gmd:MD_BrowseGraphic']['gmd:fileName']['gco:CharacterString']['#text']"></v-img>
+    <v-img :aspect-ratio="16/9"   :src ="element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:graphicOverview']['gmd:MD_BrowseGraphic']['gmd:fileName']['gco:CharacterString']['#text']"></v-img>
   </v-row>
     <v-row v-else>
     <v-img :aspect-ratio="16/9"    :src ="'https://cdn.vuetifyjs.com/images/parallax/material.jpg'"></v-img>
   </v-row>
-  </div>
   <v-row >
     <v-card-title  class="text-center text-break"  v-snip="{ lines: 4}" style="height:150px;" >{{element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text']}}</v-card-title>
     <v-divider ></v-divider>
@@ -24,7 +23,9 @@
   </v-col>
 </v-card>
 
+<v-btn width="100%" @click="getNextResults">Suivant</v-btn>
 </v-row>
+<ObServer @intersect="getNextResults"/>
 </v-container>
 </v-sheet>
 
@@ -35,12 +36,11 @@
 
 import axios from 'axios'
 import AppBar from './AppBar'
+import ObServer from "./ObServer";
 
 var convert = require('xml-js');
 
-
 export default{
-
 
   data () {
     return {
@@ -53,52 +53,41 @@ export default{
   },
 
 methods:{
-  getInitialResults(){
-    
+  async getInitialResults(){
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     axios
     .get('https://wmsiglw.cus.fr/geonetwork/srv/api/sitemap')
     .then(response => (this.info = convert.xml2js(response.data)))
     .then(() => this.info= this.info.elements[0].elements)
     .then(() => this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text.split('/')[7].split('?')[0]);}))
-    .then(() => this.liste.slice(0,this.pos).forEach((element)  =>  axios.get('https://wmsiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   ).then(response => (this.projets.push(response.data)))))
-
+    .then(() => this.liste.sort())
+    .then(() => this.liste.slice(0,8).forEach((element)  =>  axios.get('https://wmsiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   ).then(response => (this.projets.push(response.data)))))
   },
-  getNextResults(){
-const observer = new IntersectionObserver(entries => {
-  const firstEntry = entries[0];
-  if (firstEntry.isIntersecting) {
-    // Handle intersection here...
-  }
-});
-    window.onscroll = () =>{
-      let bottomOfWindow = document.documentElement.scrollTop + window.innerHeight === document.documentElement.offsetHeight;
-      if(bottomOfWindow && this.pos < this.liste.length){
-        this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wmsiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   )
-        .then(response => (this.projets.push(response.data))))
-        this.pos = this.pos + 8
-        console.log(this.pos)
-      }
+  async getNextResults(){
+    if( this.pos < this.liste.length){
+      this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wmsiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   )
+      .then(response => (this.projets.push(response.data))))
+      this.pos = this.pos + 8
+      console.log(this.pos)
     }
+    
   }
 },
   
 computed: {
   orderProjets: function () {
-     return [...this.projets].sort( (a, b) => a['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text'].localeCompare(b['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text']))
+     return [...this.projets].sort( (a, b) => a['gmd:fileIdentifier']['gco:CharacterString']['#text'].localeCompare(b['gmd:fileIdentifier']['gco:CharacterString']['#text']))
   },
 },
-components: {
-    AppBar
-  },
 
+components: {
+    AppBar,
+    ObServer
+  },
   beforeMount() {
     this.getInitialResults();
   },
-
   mounted () {
-
-    this.getNextResults()
 
   },
 
