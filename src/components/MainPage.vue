@@ -5,9 +5,9 @@
 
 <v-container >
 <v-row justify="center">
-
-<v-card outlined elevation="2"  v-for="element in projets" :key="element['gmd:fileIdentifier']['gco:CharacterString']['#text']" class="  ma-4" max-width="344" >
-  <v-col v-if="element['gmd:identificationInfo']['gmd:MD_DataIdentification'] !== undefined">
+<div v-for="element in projets" :key="element['gmd:fileIdentifier']['gco:CharacterString']['#text']">
+<v-card outlined elevation="2" v-if="element['gmd:identificationInfo']['gmd:MD_DataIdentification'] !== undefined"  class="  ma-4" max-width="344" >
+  <v-col >
   <v-row v-if="element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:graphicOverview'] !== undefined">
     <v-img :aspect-ratio="16/9"   :src ="element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:graphicOverview']['gmd:MD_BrowseGraphic']['gmd:fileName']['gco:CharacterString']['#text']"></v-img>
   </v-row>
@@ -22,8 +22,8 @@
   </v-row>
   </v-col>
 </v-card>
-
-<v-btn width="100%" @click="getNextResults">Suivant</v-btn>
+</div>
+<!-- <v-btn width="100%" color="green darken-3" dark @click="getNextResults">Suivant</v-btn> -->
 </v-row>
 <ObServer @intersect="getNextResults"/>
 </v-container>
@@ -31,9 +31,7 @@
 
 </template>
 
-
 <script>
-
 import axios from 'axios'
 import AppBar from './AppBar'
 import ObServer from "./ObServer";
@@ -47,7 +45,7 @@ export default{
       info: null,
       liste: [],
       projets: [],
-      pos: 8,
+      pos: 24,
 
     }
   },
@@ -56,21 +54,19 @@ methods:{
   async getInitialResults(){
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     axios
-    .get('https://wmsiglw.cus.fr/geonetwork/srv/api/sitemap')
+    .get('https://wisiglw.cus.fr/geonetwork/srv/api/sitemap')
     .then(response => (this.info = convert.xml2js(response.data)))
     .then(() => this.info= this.info.elements[0].elements)
     .then(() => this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text.split('/')[7].split('?')[0]);}))
     .then(() => this.liste.sort())
-    .then(() => this.liste.slice(0,8).forEach((element)  =>  axios.get('https://wmsiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   ).then(response => (this.projets.push(response.data)))))
+    .then(() => this.liste.slice(0,8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   ).then(response => (this.projets.push(response.data)))))
   },
   async getNextResults(){
     if( this.pos < this.liste.length){
-      this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wmsiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   )
+      this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   )
       .then(response => (this.projets.push(response.data))))
       this.pos = this.pos + 8
-      console.log(this.pos)
     }
-    
   }
 },
   
