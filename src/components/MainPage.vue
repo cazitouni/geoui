@@ -2,7 +2,6 @@
 <template>
 <v-sheet align="center">
 <AppBar/>
-
 <v-container >
 <v-row justify="center">
 <div v-for="element in projets" :key="element['gmd:fileIdentifier']['gco:CharacterString']['#text']">
@@ -17,7 +16,12 @@
   <v-row >
     <v-card-title  class="text-center text-break"  v-snip="{ lines: 4}" style="height:150px;" >{{element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text']}}</v-card-title>
     <v-divider ></v-divider>
-    <p  class="mt-5" v-snip="{ lines: 5 }"  style="margin-bottom:46px;max-height:150px;word-wrap: break-word;margin-left:10px;margin-right:10px;">{{element["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</p>
+    <v-tooltip right max-width="344">
+    <template v-slot:activator="{ on, attrs }">
+    <p  v-bind="attrs" v-on="on" class="mt-5" v-snip="{ lines: 5 }"  style="margin-bottom:46px;max-height:150px;word-wrap: break-word;margin-left:10px;margin-right:10px;">{{element["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</p>
+    </template>
+    <span>{{element["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</span>
+    </v-tooltip>
     <v-btn @click="$router.push({ path: element['gmd:fileIdentifier']['gco:CharacterString']['#text'] })" tile text color="green darken-3" class="white--text"  block style="position:absolute;bottom:0;">Consulter</v-btn>
   </v-row>
   </v-col>
@@ -59,11 +63,11 @@ methods:{
     .then(() => this.info= this.info.elements[0].elements)
     .then(() => this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text.split('/')[7].split('?')[0]);}))
     .then(() => this.liste.sort())
-    .then(() => this.liste.slice(0,8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   ).then(response => (this.projets.push(response.data)))))
+    .then(() => this.liste.slice(0,8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json').then(response => (this.projets.push(response.data)))))
   },
   async getNextResults(){
     if( this.pos < this.liste.length){
-      this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json'   )
+      this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json')
       .then(response => (this.projets.push(response.data))))
       this.pos = this.pos + 8
     }
@@ -86,8 +90,6 @@ components: {
   mounted () {
 
   },
-
-  
 
 }
 </script>

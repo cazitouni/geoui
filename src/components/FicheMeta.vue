@@ -1,10 +1,15 @@
 <template> 
 <div v-if="info !== null"  align="center">
-
 <h1 class=" mt-12 mx-2 text-center ">{{info['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text']}}</h1>
-<v-card  class=" mt-12 pa-1" width="80%" tiled outlined elevation="12">
-<h3 class="word-break text-justify ma-12" >{{info["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</h3>
-</v-card>
+<h2 align="left" class=" mt-12 ms-12">Résumé :</h2>
+<h4 class="word-break text-justify ma-12">{{info["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</h4>
+<h2 align="left" class=" mt-12 ms-12">Mise à jour:</h2>
+<h4 class="word-break text-justify ma-12">{{info["gmd:dataQualityInfo"]["gmd:DQ_DataQuality"]["gmd:lineage"]["gmd:LI_Lineage"]["gmd:statement"]["gco:CharacterString"]["#text"]}}</h4>
+
+<l-map class="mt-12 mx-2"  style="height: 500px;width: 80%;" :zoom="zoom" :center="center" >
+<l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
+<l-wms-tile-layer :key="wmsLayer.name" :base-url="wmsLayer.url" :layers="wmsLayer.layers" :visible="wmsLayer.visible" :name="wmsLayer.name" :attribution="wmsLayer.attribution" :transparent="true" format="image/png" layer-type="base"></l-wms-tile-layer>
+</l-map>
 </div>
 </template>
 <script>
@@ -14,8 +19,18 @@ import axios from 'axios'
   data () {
     return {
       info: null,
-      id : this.$route.path.split('/')[1]
-
+      id : this.$route.path.split('/')[1],
+      zoom: 13, 
+      url: 'https://wgs-users.s3.amazonaws.com/cus/fonds/ems_gris/{z}/{x}/{y}.png',
+      attribution: '&copy; <a target="_blank" href="http://osm.org/copyright">OpenStreetMap</a> contributors',
+      center: [48.5734053, 7.7521113],
+      wmsLayer: {
+        url: 'https://igp.metrotopic.net/project/87bb39c86fca34e3f39e99e9ca11864a/',
+        name: 'Zone LOM',
+        visible: true,
+        layers: 'zone',
+        format: 'image/png',
+      }
     }
   },
 
