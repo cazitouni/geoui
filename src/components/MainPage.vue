@@ -63,11 +63,11 @@ methods:{
     .then(() => this.info= this.info.elements[0].elements)
     .then(() => this.info.forEach((element) => {this.liste.push(element.elements[0].elements[0].text.split('/')[7].split('?')[0]);}))
     .then(() => this.liste.sort())
-    .then(() => this.liste.slice(0,8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json').then(response => (this.projets.push(response.data)))))
+    .then(() => this.liste.slice(0,24).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json').then(response => (this.projets.push(response.data)))))
   },
   async getNextResults(){
     if( this.pos < this.liste.length){
-      this.liste.slice(this.pos, this.pos + 8).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json')
+      this.liste.slice(this.pos, this.pos + 24).forEach((element)  =>  axios.get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + element + '/formatters/json')
       .then(response => (this.projets.push(response.data))))
       this.pos = this.pos + 8
     }
