@@ -15,21 +15,31 @@
 </h4>
 
 <div class="ma-12" v-if="correct">
-<l-map class="mt-12 mx-2"  style="height: 500px; width=80%" :zoom="zoom" :center="center">
+<l-map id="leaflet" class="mt-12 mx-2"  style="height: 500px; width=80%" :zoom="zoom" :center="center">
 <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
 <l-wms-tile-layer :key="wmsLayer.name" :base-url="wmsLayer.url" :layers="wmsLayer.layers" :visible="wmsLayer.visible" :name="wmsLayer.name" :attribution="wmsLayer.attribution" :transparent="true" format="image/png" layer-type="base"></l-wms-tile-layer>
 </l-map>
 </div>
 </div>
 </template>
+
+<style scoped>
+#leaflet {
+    background: white;
+}
+</style>
+
 <script>
 import axios from 'axios'
+var convert = require('xml-js');
+
   export default {
     
   data () {
     return {
       correct: false,
       info: null,
+      info_data : null,
       id : this.$route.path.split('/')[1],
       zoom: 13, 
       url: 'https://wgs-users.s3.amazonaws.com/cus/fonds/ems_gris/{z}/{x}/{y}.png',
@@ -49,6 +59,10 @@ import axios from 'axios'
    axios
     .get('https://wisiglw.cus.fr/geonetwork/srv/api/records/' + this.id + '/formatters/json'  )
     .then(response => (this.info = response.data))
+    .then(() => 
+      axios.get('https://viewer.wisiglw.cus.fr/qgis/WEB_totem?service=WMS&request=GetCapabilities&FORMAT=application/json')
+      .then(response => this.info_data = convert.xml2js(response.data))
+    )
     .then(() => this.wmsLayer.url ='https://viewer.wisiglw.cus.fr/qgis/' + this.info["gmd:distributionInfo"]["gmd:MD_Distribution"]["gmd:transferOptions"]["gmd:MD_DigitalTransferOptions"]["gmd:onLine"][1]["gmd:CI_OnlineResource"]["gmd:name"]["gco:CharacterString"]["#text"])
     .then(() => this.wmsLayer.layers = this.info["gmd:distributionInfo"]["gmd:MD_Distribution"]["gmd:transferOptions"]["gmd:MD_DigitalTransferOptions"]["gmd:onLine"][2]["gmd:CI_OnlineResource"]["gmd:name"]["gco:CharacterString"]["#text"])
     .then (() => this.correct = true)
