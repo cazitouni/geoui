@@ -14,10 +14,10 @@
   - {{info["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:pointOfContact"][0]["gmd:CI_ResponsibleParty"]["gmd:contactInfo"]["gmd:CI_Contact"]["gmd:phone"]["gmd:CI_Telephone"]["gmd:voice"]["gco:CharacterString"]["#text"]}}
 </h4>
 
-<div class="ma-12" v-if="correct">
+<div class="ma-12">
 <l-map id="leaflet" class="mt-12 mx-2"  style="height: 500px; width=80%" :zoom="zoom" :center="center">
 <l-tile-layer :url="url" :attribution="attribution"></l-tile-layer>
-<l-wms-tile-layer :key="wmsLayer.name" :base-url="wmsLayer.url" :layers="wmsLayer.layers" :visible="wmsLayer.visible" :name="wmsLayer.name" :attribution="wmsLayer.attribution" :transparent="true" format="image/png" layer-type="base"></l-wms-tile-layer>
+<l-wms-tile-layer v-if="correct" :key="wmsLayer.name" :base-url="wmsLayer.url" :layers="wmsLayer.layers" :visible="wmsLayer.visible" :name="wmsLayer.name" :attribution="wmsLayer.attribution" :transparent="true" format="image/png" layer-type="base"></l-wms-tile-layer>
 </l-map>
 </div>
 </div>
