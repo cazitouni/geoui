@@ -5,39 +5,27 @@
 <v-container >
 
 <v-row justify="center">
-
 <div v-for="element in projets" :key="element.id">
-  
-<v-card outlined elevation="2" class="  ma-4" max-width="344" >
-      
-  <v-col >
-
+<v-card outlined elevation="2" class="  ma-4" max-width="344" >    
+  <v-col align="center" justify="center">
         <v-row v-for="elemente in element._source.overview" :key="elemente.id">
-          <v-img v-if="(element._source.overview[0].url)" :aspect-ratio="16/9"   :src ="elemente.url"></v-img>
+          <v-img v-if="(element._source.overview[0])" :aspect-ratio="16/9"   :src ="elemente.url"></v-img>
           <v-img v-else :aspect-ratio="16/9"    :src ="'https://cdn.vuetifyjs.com/images/parallax/material.jpg'">ttt</v-img>
         </v-row>
-
-     <!--
-    <v-row >
-      <v-card-title  class="text-center text-break"  v-snip="{ lines: 4}" style="height:150px;" >{{element['gmd:identificationInfo']['gmd:MD_DataIdentification']['gmd:citation']['gmd:CI_Citation']['gmd:title']['gco:CharacterString']['#text']}}</v-card-title>
-      <v-divider ></v-divider>
+<v-row style="width: 100%;margin-bottom:1px;" align="center" justify="center"><v-card-title  class="text-center text-break"  v-snip="{ lines: 4}" style="height:150px;" >{{element._source.resourceTitleObject.default}}</v-card-title></v-row>
+	  <v-divider ></v-divider>
       <v-tooltip right max-width="344">
       <template v-slot:activator="{ on, attrs }">
-      <p  v-bind="attrs" v-on="on" class="mt-5" v-snip="{ lines: 5 }"  style="margin-bottom:46px;max-height:150px;word-wrap: break-word;margin-left:10px;margin-right:10px;">{{element["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</p>
-      </template>
-      <span>{{element["gmd:identificationInfo"]["gmd:MD_DataIdentification"]["gmd:abstract"]["gco:CharacterString"]["#text"]}}</span>
+      <p v-if="element._source.resourceAbstractObject !== undefined"  v-bind="attrs" v-on="on" class="mt-5" v-snip="{ lines: 5 }"  style="margin-bottom:46px;max-height:150px;word-wrap: break-word;margin-left:10px;margin-right:10px;">{{element._source.resourceAbstractObject.default}}</p>
+	</template>
+      <span v-if="element._source.resourceAbstractObject !== undefined">{{element._source.resourceAbstractObject.default}}</span>
       </v-tooltip>
-      <v-btn @click="$router.push({ path: element['gmd:fileIdentifier']['gco:CharacterString']['#text'] })" tile text color="green darken-3" class="white--text"  block style="position:absolute;bottom:0;">Consulter</v-btn>
-
-    </v-row>
-            -->
+      <v-btn @click="$router.push({ path: element._source.metadataIdentifier})" tile text color="green darken-3" class="white--text"  block>Consulter</v-btn>   
   </v-col>
-
 </v-card>
-
 </div>
-<v-btn width="100%" color="green darken-3" dark @click="getNextResults">Suivant</v-btn>
-<!--<ObServer @intersect="getNextResults"/>-->
+
+<ObServer @intersect="getNextResults"/>
 
 </v-row>
 
@@ -52,13 +40,9 @@ import axios from 'axios'
 import AppBar from './AppBar'
 import ObServer from "./ObServer";
 
-var convert = require('xml-js');
-var test = 'totem'
-var headers = {"Content-Type": "application/json; charset=UTF-8"}
-
 var data = {
 	"from": 0,
-    "size": 40,
+    "size": 8,
 	"sort": [
 		"_score"
 	],
@@ -229,11 +213,7 @@ export default{
 
   data () {
     return {
-      info: null,
-      liste: [],
       projets: {},
-      pos: 8,
-
     }
   },
 
@@ -244,12 +224,17 @@ methods:{
     .post("https://catalog.whsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
     .then(response => (this.projets = response.data.hits.hits))
   },
+  async getNextResults(){
+	data.from  += 8;
+    process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
+    axios
+    .post("https://catalog.whsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
+    .then(response => this.projets = [...this.projets, ...response.data.hits.hits])
+  },
 },
   
 computed: {
-  orderProjets: function () {
-     return [...this.projets].sort( (a, b) => a['gmd:fileIdentifier']['gco:CharacterString']['#text'].localeCompare(b['gmd:fileIdentifier']['gco:CharacterString']['#text']))
-  },
+
 },
 
 components: {
