@@ -1,38 +1,21 @@
 
 <template>
-<v-sheet align="center">
-<AppBar/>
-<v-container >
-
-<v-row justify="center">
-<div v-for="element in projets" :key="element.id">
-<v-card outlined elevation="2" class="  ma-4" max-width="344" >    
-  <v-col align="center" justify="center">
-        <v-row v-for="elemente in element._source.overview" :key="elemente.id">
-          <v-img v-if="(element._source.overview[0])" :aspect-ratio="16/9"   :src ="elemente.url"></v-img>
-          <v-img v-else :aspect-ratio="16/9"    :src ="'https://cdn.vuetifyjs.com/images/parallax/material.jpg'">ttt</v-img>
-        </v-row>
-<v-row style="width: 100%;margin-bottom:1px;" align="center" justify="center"><v-card-title  class="text-center text-break"  v-snip="{ lines: 4}" style="height:150px;" >{{element._source.resourceTitleObject.default}}</v-card-title></v-row>
-	  <v-divider ></v-divider>
-      <v-tooltip right max-width="344">
-      <template v-slot:activator="{ on, attrs }">
-      <p v-if="element._source.resourceAbstractObject !== undefined"  v-bind="attrs" v-on="on" class="mt-5" v-snip="{ lines: 5 }"  style="margin-bottom:46px;max-height:150px;word-wrap: break-word;margin-left:10px;margin-right:10px;">{{element._source.resourceAbstractObject.default}}</p>
-	</template>
-      <span v-if="element._source.resourceAbstractObject !== undefined">{{element._source.resourceAbstractObject.default}}</span>
-      </v-tooltip>
-      <v-btn @click="$router.push({ path: element._source.metadataIdentifier})" tile text color="green darken-3" class="white--text"  block>Consulter</v-btn>   
-  </v-col>
-</v-card>
-</div>
-
-<ObServer @intersect="getNextResults"/>
-
-</v-row>
-
-
-</v-container>
-</v-sheet>
-
+	<v-sheet align="center">
+		<AppBar/>
+		<v-container >
+			<v-row justify="center">
+				<v-card v-for="element in projets" :key="element.id" outlined elevation="2" class="  ma-4" max-width="344" style="height:600px;width: 344px;" >    
+					<v-img style="height: 200px;" v-if="(element._source.overview)" :aspect-ratio="16/9"   :src ="element._source.overview[0].url"></v-img>
+					<v-img v-else :aspect-ratio="16/9"    :src ="'https://cdn.vuetifyjs.com/images/parallax/material.jpg'"></v-img>
+					<v-card-title   class="text-break"   style="height:150px;text-align:inherit;"> {{element._source.resourceTitleObject.default}}</v-card-title>
+					<v-divider ></v-divider>
+					<div v-if="element._source.resourceAbstractObject !== undefined" style="height:150px;margin-left: 2px;margin-right: 2px;margin-top:30px;text-align:inherit;"><p v-snip="{ lines: 6 }" style="max-height: 150px;">{{element._source.resourceAbstractObject.default}}</p></div>
+					<v-btn style="height: 40px;margin-top: 20px;position: absolute;bottom: 0;" @click="$router.push({ path: element._source.metadataIdentifier})" tile text color="green darken-3" class="white--text"  block>Consulter</v-btn>
+				</v-card>
+			</v-row>
+			<ObServer @intersect="getNextResults"/>
+		</v-container>
+	</v-sheet>
 </template>
 
 <script>
@@ -221,14 +204,14 @@ methods:{
   async getInitialResults(){
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     axios
-    .post("https://catalog.whsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
+    .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
     .then(response => (this.projets = response.data.hits.hits))
   },
   async getNextResults(){
 	data.from  += 8;
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
     axios
-    .post("https://catalog.whsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
+    .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
     .then(response => this.projets = [...this.projets, ...response.data.hits.hits])
   },
 },
