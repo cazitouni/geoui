@@ -1,26 +1,25 @@
 <template>
 	<v-sheet align="center">
 		<v-toolbar color="green darken-3"  dense elevation="12"  class="fixed-bar">
-  			<v-text-field @keyup.enter="onEnter()" v-model="searchText" label="Rechercher dans le catalogue" dark hide-details color="light-blue accent-3" prepend-icon="mdi-magnify" single-line></v-text-field>
+  			<v-text-field lazy @keyup="onEnter()" v-model="searchText" label="Rechercher dans le catalogue" dark hide-details color="light-blue accent-3" prepend-icon="mdi-magnify" single-line></v-text-field>
 		</v-toolbar>
 		<v-container>
 			<v-row justify="center">
-				<v-card v-for="element in projets" outlined elevation="2" class="  ma-4" max-width="344" style="height:400px;width: 344px;border-radius: 0;" >    
-					<v-img style="height: 200px;" v-if="(element._source.overview)" :aspect-ratio="16/9"   :src ="element._source.overview[0].url"></v-img>
+				<v-card id="card" v-for="element in projets" :key="element._source.metadataIdentifier" outlined elevation="2" class="ma-4">    
+					<v-img v-if="element._source.overview" :aspect-ratio="16/9"   :src ="element._source.overview[0].url"></v-img>
 					<v-img v-else :aspect-ratio="16/9"    :src ="'https://cdn.vuetifyjs.com/images/parallax/material.jpg'"></v-img>
-					<v-card-title   class="text-break"   style="height:150px;text-align:inherit;"> {{element._source.resourceTitleObject.default}}</v-card-title>
-					<v-btn style="height: 50px;margin-top: 20px;position: absolute;bottom: 0;" @click="$router.push({ path: element._source.metadataIdentifier})" tile text color="green darken-3" class="white--text"  block>Consulter</v-btn>
+					<v-card-title class="text-break">{{element._source.resourceTitleObject.default}}</v-card-title>
+					<v-btn id="cardBtn" @click="onClickConsulter(element._source.metadataIdentifier)" tile text color="green darken-3" class="white--text" block>Consulter</v-btn>
 				</v-card>
 			</v-row>
 			<ObServer @intersect="getNextResults"/>
 		</v-container>
 	</v-sheet>
 </template>
-
 <script>
 import axios from 'axios'
 import ObServer from "./ObServer";
-
+var text = '';
 var data = {
 	"from": 0,
     "size": 8,
@@ -189,33 +188,39 @@ var data = {
 		}
 	},
 }
-
 export default{
-
   data () {
     return {
-      projets: {},
+      projets: [],
 	  searchText : ''
     }
   },
-
 methods:{
+	onClickConsulter(metadataIdentifier) {
+    this.$router.push({ path: metadataIdentifier });
+  },
   async getInitialResults(){
 	data.from = 0
+	try{
+		delete data.query.function_score.query.bool.must[1]
+		data.query.function_score.query.bool.must.splice(1,1)
+	}catch(error){}
     axios
     .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
     .then(response => (this.projets = response.data.hits.hits))
   },
   async getNextResults(){
-	data.from  += 8;
+	data.size += 8;
     axios
     .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
-    .then(response => this.projets = [...this.projets, ...response.data.hits.hits])
+    .then(response => this.projets = response.data.hits.hits)
   },
    async onEnter(){
 	data.from = 0
 	if (this.searchText !== ''){
-		data.query.function_score.query.bool.must[1] = { ...data.query.function_score.query.bool.must[1], query_string: { query: `(any:(${this.searchText}) resourceTitleObject.default:(${this.searchText})^3)` }}
+		if(this.searchText.endsWith(" ")){text = this.searchText.replace(/\s/g, '');}
+		else{text = this.searchText}
+		data.query.function_score.query.bool.must[1] = { ...data.query.function_score.query.bool.must[1], query_string: { query: `(any:(*${text}*)resourceTitleObject.default:(*${text}*)^3)` }}
 	}
 	else
 	{
@@ -226,33 +231,34 @@ methods:{
 		axios
 		.post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
 		.then(response => this.projets = response.data.hits.hits)
-		.then(() => this.getNextResults())
-  }
-  
+  }  
 },
-  
-computed: {
-
-},
-
 components: {
     ObServer
   },
   beforeMount() {
     this.getInitialResults();
   },
-  mounted () {
-
-  },
-
 }
 </script>
 <style scoped>
 .fixed-bar {
-  width : 100%;
-  position: sticky;
-  position: -webkit-sticky;
-  top: 0em;
-  z-index: 3;
+	width : 100%;
+	position: sticky;
+	position: -webkit-sticky;
+	top: 0em;
+	z-index: 3;
+}
+#cardBtn{
+	height: 50px;
+	margin-top: 20px;
+	position: absolute;
+	bottom: 0;
+}
+#card{
+	height:400px;
+	width: 344px;
+	border-radius: 0;
+	max-width:344px;
 }
 </style>
