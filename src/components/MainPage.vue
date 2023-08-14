@@ -1,10 +1,13 @@
 <template>
 	<v-sheet align="center">
 		<v-toolbar color="green darken-3"  dense elevation="12"  class="fixed-bar">
-  			<v-text-field lazy @keyup="onEnter()" v-model="searchText" label="Rechercher dans le catalogue" dark hide-details color="light-blue accent-3" prepend-icon="mdi-magnify" single-line></v-text-field>
+  			<v-text-field lazy @input="handleSearchInput" v-model="searchText" label="Rechercher dans le catalogue" dark hide-details color="light-blue accent-3" prepend-icon="mdi-magnify" single-line></v-text-field>
 		</v-toolbar>
 		<v-container>
 			<v-row justify="center">
+				<v-overlay :value="loading">
+					<v-progress-circular indeterminate :size="128" :width="10" color="green darken-3"></v-progress-circular>
+				</v-overlay>
 				<v-card id="card" v-for="element in projets" :key="element._source.metadataIdentifier" outlined elevation="2" class="ma-4">    
 					<v-img v-if="element._source.overview" :aspect-ratio="16/9"   :src ="element._source.overview[0].url"></v-img>
 					<v-img v-else :aspect-ratio="16/9"    :src ="'https://cdn.vuetifyjs.com/images/parallax/material.jpg'"></v-img>
@@ -18,6 +21,7 @@
 </template>
 <script>
 import axios from 'axios'
+import _debounce from 'lodash/debounce';
 import ObServer from "./ObServer";
 var text = '';
 var data = {
@@ -192,14 +196,23 @@ export default{
   data () {
     return {
       projets: [],
-	  searchText : ''
+	  searchText : '',
+	  loading: false
     }
   },
 methods:{
 	onClickConsulter(metadataIdentifier) {
     this.$router.push({ path: metadataIdentifier });
   },
+	debouncedSearch: _debounce(function() {
+	
+      this.searchFunction() // Call your actual search function here
+    }, 300),
+	handleSearchInput() {
+      this.debouncedSearch(); 
+    },
   async getInitialResults(){
+	this.loading = true;
 	data.from = 0
 	try{
 		delete data.query.function_score.query.bool.must[1]
@@ -207,15 +220,17 @@ methods:{
 	}catch(error){}
     axios
     .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
-    .then(response => (this.projets = response.data.hits.hits))
+    .then(response => {this.projets = response.data.hits.hits;this.loading = false;});
   },
   async getNextResults(){
+	this.loading = true;
 	data.size += 8;
     axios
     .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
-    .then(response => this.projets = response.data.hits.hits)
+    .then(response => {this.projets = response.data.hits.hits;this.loading = false;});
   },
-   async onEnter(){
+   async searchFunction(){
+	this.loading = true;
 	data.from = 0
 	if (this.searchText !== ''){
 		if(this.searchText.endsWith(" ")){text = this.searchText.replace(/\s/g, '');}
@@ -228,9 +243,9 @@ methods:{
 		delete data.query.function_score.query.bool.must[1]
 		data.query.function_score.query.bool.must.splice(1,1)
 	}
-		axios
-		.post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
-		.then(response => this.projets = response.data.hits.hits)
+	axios
+    .post("https://catalog.wpsiglw.cus.fr/geonetwork/srv/api/search/records/_search?bucket=s101", data)
+    .then(response => {this.projets = response.data.hits.hits;this.loading = false;});
   }  
 },
 components: {
