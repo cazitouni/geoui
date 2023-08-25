@@ -2,7 +2,7 @@
 	<v-container fluid v-if="projets && projets.resourceTitleObject.default" class="fill-height">
 <!-- Boutton retour -->
 		<v-row>
-			<v-btn tile text color="green darken-3" class="white--text ma-4" @click="$router.push('/')">
+			<v-btn tile text color="green darken-3" class="white--text ma-4" @click="$router.push('/catalog')">
 				<v-icon dark>mdi-arrow-left</v-icon> Retour
 			</v-btn>
 		</v-row>
